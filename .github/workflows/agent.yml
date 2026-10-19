@@ -1,0 +1,40 @@
+
+name: Free Backlink Prospect Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_queries:
+        description: "Number of search queries (1-12)"
+        required: false
+        default: "12"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run backlink agent
+        env:
+          MAX_QUERIES: ${{ github.event.inputs.max_queries || '12' }}
+          REQUEST_DELAY_SECONDS: "2"
+        run: python main.py
+
+      - name: Upload prospect report
+        uses: actions/upload-artifact@v4
+        with:
+          name: itskhay-backlink-prospects-${{ github.run_number }}
+          path: output/prospects.csv
+          if-no-files-found: error
+          retention-days: 30
